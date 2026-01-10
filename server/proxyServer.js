@@ -12,7 +12,7 @@ async function startProxyServer(port, origin) {
   console.log(`Port: ${port}, Origin: ${originUrl}`);
   
   //get any origin
-  app.all('/*', async (req, res) => {
+  app.use(async (req, res) => {
     try {
       const reqPath = req.originalUrl;
       const cacheKey = `cache:${reqPath}`; 
