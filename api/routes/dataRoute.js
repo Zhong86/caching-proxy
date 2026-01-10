@@ -1,33 +1,31 @@
 const express = require('express'); 
 const router = express.Router();
 const pool = require('../config/database'); 
-const redis = require('redis'): 
+const redisClient = require('../config/redis'); 
 
-const redisClient = redis.createClient(); 
-const DEFAULT_EXPIRATION = 10; 
+const DEFAULT_EXPIRATION = 60; 
 
 router.get('/data', async (req, res) => {
   try {
     //REDIS 
-    redisClient.get('data', async (error, data) => {
-      if (error) console.error(error); 
-      if (photos != null) {
-        console.log('Cache HIT'); 
-        return res.status(200).json(JSON.parse(photos)); 
-      } else {
-        console.log('Cache MISS'); 
-        const [rows] = await pool.query({
-          'SELECT * FROM caching-proxy-db'
-        }); 
+    const cachedData = await redisClient.get('data'); 
 
-        if (!rows || rows.length === 0) {
-          res.status(404).json({ message: 'No data in db' }); 
-        }
+    if (cachedData != null) {
+      console.log('Cache HIT'); 
+      return res.status(200).json(JSON.parse(cachedData)); 
+    } else {
+      console.log('Cache MISS'); 
+      const [rows] = await pool.query(
+        'SELECT * FROM datas'
+      ); 
 
-        redisClient.setex('data', DEFAULT_EXPIRATION, JSON.stringify(rows));
-        res.status(200).json(rows); 
+      if (!rows || rows.length === 0) {
+        res.status(404).json({ message: 'No data in db' }); 
       }
-    }); 
+
+      await redisClient.setEx('data', DEFAULT_EXPIRATION, JSON.stringify(rows));
+      res.status(200).json(rows); 
+    }
   } catch (error) {
     res.status(500).json({ message: error.message }); 
   }

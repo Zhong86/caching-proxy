@@ -1,6 +1,8 @@
-const commander = require('commander'); 
+#!/usr/bin/env node
 
+const { Command } = require('commander'); 
 const program = new Command(); 
+const { getData, clearCache } = require('./fetch/dataFetch'); 
 
 program 
   .name('cache_proxy')
@@ -18,10 +20,12 @@ program
       process.exit(1);
     }
     //GET DATA
+    getData(data.port, data.origin); 
   }); 
 
 program
   .command('clear')
+  .description('Clear Redis cache') 
   .action(() => clearCache()); 
 
 program.parse(); 
