@@ -2,7 +2,7 @@
 
 const { Command } = require('commander'); 
 const program = new Command(); 
-const { getData, clearCache } = require('./fetch/dataFetch'); 
+const { startProxyServer, clearCache } = require('./server/proxyServer'); 
 
 program 
   .name('cache_proxy')
@@ -10,22 +10,18 @@ program
   .version('1.0.0'); 
 
 program
-  .command('data')
-  .description('Getting info either from cache or server')
-  .option('--port <port>', 'Port to send data to')
-  .option('--origin <link>', 'Link to send data to')
+  .option('--port <number>', 'Port where caching proxy server will run')
+  .option('--origin <url>', 'URL of server to forward req to ')
+  .option('--clear-cache', 'Clear Redis cache')
   .action((data) => {
-    if (!data.port || !data.origin) {
-      console.error('Error: Port and Origin required'); 
-      process.exit(1);
+    if (data.clearCache) {
+      clearCache(); 
+    } else if (data.port && data.origin) {
+      startProxyServer(data.port, data.origin); 
+    } else {
+      console.error('Error: --port and --origin are required'); 
+      process.exit(1); 
     }
-    //GET DATA
-    getData(data.port, data.origin); 
   }); 
-
-program
-  .command('clear')
-  .description('Clear Redis cache') 
-  .action(() => clearCache()); 
 
 program.parse(); 

@@ -1,6 +1,6 @@
 # Project: https://roadmap.sh/projects/caching-server <br>
+Get data from existing URL NOT from db <br>
 -Express <br>
--MariaDB <br>
 -Redis <br>
 -Commander <br>
 
